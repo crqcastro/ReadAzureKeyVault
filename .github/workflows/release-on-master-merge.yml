@@ -66,7 +66,8 @@ jobs:
           # --- Extração Inteligente das Notas de Release ---
           marker_release = "## Notas de Release"
           if marker_release in body_full:
-              content = body_full.split(marker_release)[1].strip()
+              after_marker = body_full.split(marker_release)[1]
+              content = after_marker.split("---")[0].strip()
               content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL).strip()
               message = content if content else f"Release da versão {version}."
           else:

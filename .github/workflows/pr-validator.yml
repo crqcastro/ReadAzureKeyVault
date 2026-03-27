@@ -21,8 +21,8 @@ jobs:
             exit 1
           fi
 
-          # Extrai o conteúdo após o marcador e remove espaços/comentários
-          CONTENT=$(echo "$PR_BODY" | sed -n "/$MARKER/,\$p" | sed "1d" | sed 's/<!--.*-->//g' | xargs)
+          # Extrai o conteúdo entre o marcador e o separador ---
+          CONTENT=$(echo "$PR_BODY" | sed -n "/$MARKER/,/^---/p" | sed "1d" | sed '/^---/d' | sed 's/<!--.*-->//g' | xargs)
 
           if [ -z "$CONTENT" ] || [ "$CONTENT" = "-" ]; then
             echo "ERRO: As Notas de Release estão vazias. Por favor, descreva as alterações para o README."
