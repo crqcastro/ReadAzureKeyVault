@@ -14,7 +14,7 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           MARKER="## Notas de Release"
-          
+
           # Verifica se o marcador existe
           if ! echo "$PR_BODY" | grep -q "$MARKER"; then
             echo "ERRO: O marcador '$MARKER' não foi encontrado no corpo do PR."
@@ -22,7 +22,7 @@ jobs:
           fi
 
           # Extrai o conteúdo após o marcador e remove espaços/comentários
-          CONTENT=$(echo "$PR_BODY" | sed -n "/$MARKER/,\$p" | sed "1d" | sed 's///g' | xargs)
+          CONTENT=$(echo "$PR_BODY" | sed -n "/$MARKER/,\$p" | sed "1d" | sed 's/<!--.*-->//g' | xargs)
 
           if [ -z "$CONTENT" ] || [ "$CONTENT" = "-" ]; then
             echo "ERRO: As Notas de Release estão vazias. Por favor, descreva as alterações para o README."

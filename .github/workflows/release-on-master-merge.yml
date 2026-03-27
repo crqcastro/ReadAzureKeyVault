@@ -67,7 +67,7 @@ jobs:
           marker_release = "## Notas de Release"
           if marker_release in body_full:
               content = body_full.split(marker_release)[1].strip()
-              content = re.sub(r"", "", content, flags=re.DOTALL).strip()
+              content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL).strip()
               message = content if content else f"Release da versão {version}."
           else:
               message = title
@@ -76,7 +76,7 @@ jobs:
           text = readme.read_text(encoding="utf-8")
           sections = ["## Histórico de versões", "## Historico de versoes", "## Changelog"]
           marker = next((m for m in sections if m in text), None)
-          
+
           if marker is None:
               raise SystemExit("Seção de histórico não encontrada no README.md")
 
@@ -96,7 +96,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Verifica se houve mudança real no README
           if git diff --quiet README.md; then
             echo "README sem alterações."
