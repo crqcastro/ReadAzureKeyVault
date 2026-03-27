@@ -159,6 +159,7 @@ br.com.cesarcastro
 ```
 
 ## Histórico de versões
+<!-- RELEASE_NOTES --> 
 
 ### v1.0.0
 **Versão inicial da aplicação.**
