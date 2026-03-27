@@ -1,0 +1,32 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  validate-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Release Notes
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          MARKER="## Notas de Release"
+
+          # Verifica se o marcador existe
+          if ! echo "$PR_BODY" | grep -q "$MARKER"; then
+            echo "ERRO: O marcador '$MARKER' não foi encontrado no corpo do PR."
+            exit 1
+          fi
+
+          # Extrai o conteúdo após o marcador e remove espaços/comentários
+          CONTENT=$(echo "$PR_BODY" | sed -n "/$MARKER/,\$p" | sed "1d" | sed 's/<!--.*-->//g' | xargs)
+
+          if [ -z "$CONTENT" ] || [ "$CONTENT" = "-" ]; then
+            echo "ERRO: As Notas de Release estão vazias. Por favor, descreva as alterações para o README."
+            exit 1
+          fi
+
+          echo "Sucesso: Notas de release detectadas."
