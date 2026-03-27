@@ -1,0 +1,119 @@
+name: Release On Master Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+
+# Impede que múltiplos merges simultâneos causem erro de conflito no README
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  tag-and-update-readme:
+    # Garante que só rode se o PR foi mergeado (e não apenas fechado)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Ajuste para a sua versão do projeto
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Read version from pom.xml
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Extrai a versão ignorando logs do Maven
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Update README release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          readme = Path("README.md")
+          if not readme.exists():
+              raise SystemExit("README.md nao encontrado")
+
+          version = os.environ["VERSION"].strip()
+          title = (os.environ.get("PR_TITLE") or "").strip()
+          body_full = (os.environ.get("PR_BODY") or "").replace("\r\n", "\n").strip()
+
+          # --- Extração Inteligente das Notas de Release ---
+          marker_release = "## Notas de Release"
+          if marker_release in body_full:
+              content = body_full.split(marker_release)[1].strip()
+              content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL).strip()
+              message = content if content else f"Release da versão {version}."
+          else:
+              message = title
+
+          # --- Inserção no README ---
+          text = readme.read_text(encoding="utf-8")
+          sections = ["## Histórico de versões", "## Historico de versoes", "## Changelog"]
+          marker = next((m for m in sections if m in text), None)
+
+          if marker is None:
+              raise SystemExit("Seção de histórico não encontrada no README.md")
+
+          entry_header = f"### v{version}"
+          if entry_header in text:
+              print(f"Versao {version} ja existe no README. Ignorando.")
+              raise SystemExit(0)
+
+          insertion = f"\n\n{entry_header}\n{message}\n"
+          idx = text.index(marker) + len(marker)
+          updated = text[:idx] + insertion + text[idx:]
+
+          readme.write_text(updated, encoding="utf-8")
+          PY
+
+      - name: Commit and Push README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Verifica se houve mudança real no README
+          if git diff --quiet README.md; then
+            echo "README sem alterações."
+          else
+            git add README.md
+            git commit -m "docs: release v${{ steps.version.outputs.version }} [skip ci]"
+            git pull origin master --rebase
+            git push origin master
+          fi
+
+      - name: Create and Push Tag
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          # Verifica se a tag já existe no remoto para evitar erro
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+            echo "Tag $TAG ja existe."
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+          fi
