@@ -159,6 +159,19 @@ br.com.cesarcastro
 ```
 
 ## Histórico de versões
+
+### v1.0.1
+(README)
+- 
+- Adicionado arquivo do github actions para geracao da tag automaticamente
+- Adicionado modelo de comentario do PR
+- Adicionado workflow para atualizar no READEME as alterações feitas
+---
+## Checklist de Qualidade
+- [x] Cobertura de testes unitários validada.
+- [x] Logs e monitoramento configurados.
+- [x] Ajuste na versão da aplicação no pom usando o SEMVER [https://semver.org/](https://semver.org/)
+
 <!-- RELEASE_NOTES --> 
 
 ### v1.0.0
