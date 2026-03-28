@@ -160,6 +160,13 @@ br.com.cesarcastro
 
 ## Histórico de versões
 
+### v1.0.2
+(README)
+- 
+
+Antes, todo o conteúdo após '
+
+
 ### v1.0.1
 
 - Adicionado arquivo do github actions para geracao da tag automaticamente
