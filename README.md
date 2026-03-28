@@ -160,8 +160,14 @@ br.com.cesarcastro
 
 ## Histórico de versões
 
+### v1.0.1
+
+- Adicionado arquivo do github actions para geracao da tag automaticamente
+- Adicionado modelo de comentario do PR
+- Adicionado workflow para atualizar no READEME as alterações feitas
+
+
 ### v1.0.0
-**Versão inicial da aplicação.**
 
 - Interface gráfica desktop com Java Swing.
 - Conexão ao Azure Key Vault via Service Principal (Client ID + Client Secret + Tenant ID).
